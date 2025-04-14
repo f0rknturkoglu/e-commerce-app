@@ -8,18 +8,29 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                    python3 -m venv venv
+                    . venv/bin/activate
+                    pip install --upgrade pip
+                    pip install -r requirements.txt
+                '''
             }
         }
         stage('Test') {
             steps {
-                sh 'pytest --cov=./ --cov-report=xml tests/'
+                sh '''
+                    . venv/bin/activate
+                    pytest --cov=./ --cov-report=xml tests/
+                '''
             }
         }
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh 'sonar-scanner'
+                    sh '''
+                        . venv/bin/activate
+                        sonar-scanner
+                    '''
                 }
             }
         }
@@ -32,7 +43,7 @@ pipeline {
             steps {
                 withDockerRegistry([ credentialsId: "docker-hub-credentials", url: "" ]) {
                     sh 'docker tag e-commerce-app f0rknn/e-commerce-app:latest'
-                    sh 'docker push f0rknn/e-commerce-app:latest'
+                    sh 'docker push f0rknnn/e-commerce-app:latest'
                 }
             }
         }
