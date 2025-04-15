@@ -27,10 +27,10 @@ pipeline {
         stage('SonarQube Analysis') {
             steps {
                 withSonarQubeEnv('SonarQube') {
-                    sh '''
-                        . venv/bin/activate
-                        sonar-scanner
-                    '''
+                    script {
+                        def scannerHome = tool 'SonarScanner'
+                        sh "${scannerHome}/bin/sonar-scanner"
+                    }
                 }
             }
         }
@@ -43,7 +43,7 @@ pipeline {
             steps {
                 withDockerRegistry([ credentialsId: "docker-hub-credentials", url: "" ]) {
                     sh 'docker tag e-commerce-app f0rknn/e-commerce-app:latest'
-                    sh 'docker push f0rknnn/e-commerce-app:latest'
+                    sh 'docker push f0rknn/e-commerce-app:latest'
                 }
             }
         }
